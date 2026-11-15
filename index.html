@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>RANDOM PLAY // WATCH LOG</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&family=Orbitron:wght@500;600;700;800;900&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --black:#000; --bg:#121212; --panel:#1e1e1e; --panel2:#292929;
+      --acid:#d2ff00; --orange:#ff5500; --white:#f7f7f2; --muted:#aaa99f;
+      --line:3px solid #000; --shadow:6px 6px 0 #000;
+    }
+    * { box-sizing:border-box; }
+    body {
+      margin:0; min-height:100vh; color:var(--white); background-color:var(--bg);
+      font-family:"Noto Sans TC",sans-serif;
+      background-image:radial-gradient(#ffffff12 .8px,transparent .8px),repeating-linear-gradient(0deg,#ffffff05 0px,#ffffff05 1px,transparent 1px,transparent 4px);
+      background-size:7px 7px,100% 4px;
+    }
+    button,input,textarea,select { font:inherit; }
+    button { cursor:pointer; }
+    .shell { width:min(1280px,calc(100% - 36px)); margin:0 auto; padding:28px 0 60px; }
+    .topline { display:flex; justify-content:space-between; align-items:center; gap:12px; border-bottom:2px solid #555; padding-bottom:14px; color:var(--muted); font:700 11px Orbitron,sans-serif; letter-spacing:2px; }
+    .topline strong { color:var(--acid); }
+    .hero { display:flex; align-items:flex-end; justify-content:space-between; gap:24px; padding:30px 0 24px; }
+    .eyebrow { color:var(--orange); font:800 12px Orbitron,sans-serif; letter-spacing:3px; }
+    h1 { margin:8px 0 0; font-size:clamp(34px,6vw,66px); line-height:.98; font-weight:900; letter-spacing:-2px; text-transform:uppercase; }
+    h1 span { color:var(--acid); text-shadow:4px 4px 0 #000; }
+    .hero-note { max-width:260px; color:var(--muted); font-size:12px; line-height:1.7; text-align:right; }
+    .hero-note b { color:var(--white); }
+    .stats { display:grid; grid-template-columns:repeat(3,1fr); gap:14px; margin:12px 0 24px; }
+    .stat { background:var(--acid); color:#080808; border:var(--line); box-shadow:var(--shadow); padding:15px 18px; transform:skew(-2deg); }
+    .stat:nth-child(2) { background:var(--orange); color:white; }
+    .stat:nth-child(3) { background:var(--panel2); color:var(--white); }
+    .stat-label { font-size:11px; font-weight:900; letter-spacing:1px; }
+    .stat-value { font:900 clamp(24px,4vw,36px) Orbitron,sans-serif; margin-top:4px; }
+    .toolbar { display:flex; flex-wrap:wrap; align-items:center; gap:10px; margin:26px 0 18px; }
+    .search-wrap { flex:1 1 230px; position:relative; }
+    .search-wrap:before { content:"⌕"; position:absolute; left:14px; top:7px; font-size:24px; color:var(--acid); }
+    .search { width:100%; padding:13px 14px 13px 42px; background:var(--panel); color:white; border:var(--line); outline:none; box-shadow:4px 4px 0 #000; }
+    .search:focus { border-color:var(--acid); }
+    .filters { display:flex; flex-wrap:wrap; gap:8px; }
+    .btn { border:var(--line); background:var(--panel2); color:var(--white); padding:11px 15px; font-weight:900; font-size:12px; box-shadow:4px 4px 0 #000; transition:transform .08s,box-shadow .08s; }
+    .btn:hover { color:var(--acid); }
+    .btn:active { transform:translate(4px,4px); box-shadow:0 0 0 #000; }
+    .btn.active { background:var(--acid); color:#080808; }
+    .btn.primary { background:var(--acid); color:#080808; }
+    .btn.danger { background:var(--orange); color:white; }
+    .btn.small { padding:7px 10px; font-size:11px; }
+    .section-head { display:flex; justify-content:space-between; align-items:center; gap:12px; margin:28px 0 14px; }
+    .section-head h2 { margin:0; font-size:17px; letter-spacing:1px; }
+    .section-head h2:before { content:"▌"; color:var(--acid); margin-right:8px; }
+    .counter { color:var(--muted); font:700 11px Orbitron,sans-serif; }
+    .tape-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(235px,1fr)); gap:20px; }
+    .tape-card { position:relative; min-width:0; background:var(--panel); color:var(--white); border:var(--line); box-shadow:var(--shadow); overflow:hidden; cursor:pointer; transition:transform .15s; clip-path:polygon(0 0,calc(100% - 18px) 0,100% 18px,100% 100%,0 100%); }
+    .tape-card:hover { transform:translateY(-4px) rotate(-.3deg); }
+    .cover { height:160px; position:relative; display:grid; place-items:center; overflow:hidden; background:linear-gradient(135deg,#343434,#171717); border-bottom:3px solid #000; }
+    .cover:after { content:""; position:absolute; inset:0; background:repeating-linear-gradient(135deg,transparent 0 8px,#ffffff0c 8px 10px); pointer-events:none; }
+    .cover img { width:100%; height:100%; object-fit:cover; }
+    .default-cover { width:100%; height:100%; display:flex; flex-direction:column; align-items:center; justify-content:center; background:radial-gradient(circle at 50% 45%,#424a20,#1b1d17 65%); color:var(--acid); }
+    .cassette { width:124px; height:76px; border:4px solid #080808; border-radius:9px; background:var(--acid); box-shadow:7px 7px 0 #000; position:relative; transform:rotate(-7deg); }
+    .cassette:before { content:""; position:absolute; left:12px; right:12px; top:10px; height:32px; background:#171717; border:3px solid #000; border-radius:4px; }
+    .cassette:after { content:"◉　　 ◉"; position:absolute; left:0; right:0; top:15px; text-align:center; font-size:13px; color:var(--acid); }
+    .cover-word { margin-top:14px; font:900 10px Orbitron,sans-serif; letter-spacing:3px; text-shadow:2px 2px #000; }
+    .card-topline { position:absolute; z-index:1; top:10px; left:10px; right:10px; display:flex; justify-content:space-between; align-items:center; }
+    .pill { display:inline-block; background:var(--orange); color:white; padding:4px 7px; border:2px solid #000; font-size:10px; font-weight:900; }
+    .score { background:var(--acid); color:#080808; border:2px solid #000; padding:4px 7px; font:900 12px Orbitron,sans-serif; }
+    .card-body { padding:14px 14px 16px; }
+    .card-kicker { color:var(--acid); font:700 9px Orbitron,sans-serif; letter-spacing:2px; }
+    .card-title { margin:7px 0 10px; font-size:19px; font-weight:900; overflow-wrap:anywhere; }
+    .tags { display:flex; flex-wrap:wrap; gap:5px; min-height:22px; }
+    .tag { color:#c9c9c1; border:1px solid #666; padding:2px 6px; font-size:10px; }
+    .card-foot { display:flex; justify-content:space-between; align-items:center; margin-top:14px; color:var(--muted); font-size:10px; }
+    .expanded { display:none; padding:0 14px 15px; color:#d2d2ca; font-size:12px; line-height:1.7; }
+    .tape-card.open .expanded { display:block; }
+    .review { border-top:1px dashed #666; padding-top:10px; margin-top:4px; white-space:pre-wrap; overflow-wrap:anywhere; }
+    .card-actions { display:flex; gap:8px; margin-top:12px; }
+    .empty { grid-column:1/-1; text-align:center; padding:50px 15px; border:2px dashed #555; color:var(--muted); }
+    .empty b { display:block; color:var(--acid); font:800 18px Orbitron,sans-serif; margin-bottom:8px; }
+    .footer { margin-top:42px; padding-top:14px; border-top:2px solid #444; display:flex; justify-content:space-between; gap:12px; color:#777; font:10px Orbitron,sans-serif; letter-spacing:1px; }
+    dialog { width:min(560px,calc(100% - 24px)); max-height:90vh; overflow:auto; padding:0; color:var(--white); background:var(--panel); border:3px solid #000; box-shadow:10px 10px 0 #000; }
+    dialog::backdrop { background:#000c; backdrop-filter:blur(4px); }
+    .modal-head { display:flex; justify-content:space-between; align-items:center; padding:17px 20px; background:var(--acid); color:#080808; border-bottom:3px solid #000; }
+    .modal-head h3 { margin:0; font:900 16px Orbitron,sans-serif; }
+    .modal-content { padding:20px; }
+    .form-grid { display:grid; grid-template-columns:1fr 1fr; gap:13px; }
+    .field { display:flex; flex-direction:column; gap:6px; }
+    .field.full { grid-column:1/-1; }
+    .field label { color:var(--acid); font-size:11px; font-weight:900; letter-spacing:.5px; }
+    .field input,.field select,.field textarea { width:100%; padding:11px; border:2px solid #000; background:#111; color:white; outline:none; }
+    .field input:focus,.field select:focus,.field textarea:focus { border-color:var(--acid); }
+    .field textarea { min-height:100px; resize:vertical; }
+    .hint { color:#888; font-size:10px; }
+    .modal-actions { display:flex; justify-content:flex-end; gap:9px; margin-top:18px; }
+    .close-x { border:0; background:transparent; color:#080808; font-size:24px; font-weight:900; }
+    @media(max-width:650px) {
+      .shell { width:min(100% - 24px,1280px); padding-top:16px; }
+      .hero { align-items:flex-start; flex-direction:column; }
+      .hero-note { text-align:left; }
+      .stats { gap:8px; }
+      .stat { padding:11px; }
+      .stat-label { font-size:9px; }
+      .form-grid { grid-template-columns:1fr; }
+      .field.full { grid-column:auto; }
+      .footer { flex-direction:column; }
+    }
+  </style>
+</head>
+<body>
+  <main class="shell">
+    <div class="topline"><span><strong>RANDOM PLAY</strong> / VIDEO STORE ARCHIVE</span><span>NEW ERIDU // NO. 01</span></div>
+    <header class="hero">
+      <div><div class="eyebrow">PERSONAL MEDIA DATABASE</div><h1>WATCH<br><span>LOG_</span></h1></div>
+      <div class="hero-note"><b>KEEP YOUR STORY.</b><br>每一部看過的作品，都是一卷值得收藏的錄影帶。<br>LOCAL STORAGE // AUTO SAVE ENABLED</div>
+    </header>
+
+    <section class="stats" aria-label="觀看統計">
+      <div class="stat"><div class="stat-label">已收藏作品 / TOTAL</div><div class="stat-value" id="totalCount">00</div></div>
+      <div class="stat"><div class="stat-label">平均評分 / AVG SCORE</div><div class="stat-value" id="avgScore">--</div></div>
+      <div class="stat"><div class="stat-label">神作收藏 / MASTERPIECE</div><div class="stat-value" id="masterCount">00</div></div>
+    </section>
+
+    <div class="toolbar">
+      <div class="search-wrap"><input id="searchInput" class="search" type="search" placeholder="搜尋作品名稱、標籤或心得..." aria-label="搜尋作品"></div>
+      <div class="filters" id="filters">
+        <button class="btn active" data-filter="all">全部</button>
+        <button class="btn" data-filter="done">已完結</button>
+        <button class="btn" data-filter="watching">追劇中</button>
+        <button class="btn" data-filter="master">神作推薦</button>
+      </div>
+      <button class="btn primary" id="addBtn">＋ 新增收藏</button>
+    </div>
+
+    <div class="section-head"><h2>VIDEO TAPE WALL / 錄影帶收藏牆</h2><span class="counter" id="resultCount">02 TAPES</span></div>
+    <section class="tape-grid" id="tapeGrid" aria-live="polite"></section>
+    <footer class="footer"><span>RP_ARCHIVE.SYS // PERSONAL USE ONLY</span><span>DATA SAVED LOCALLY IN THIS BROWSER</span></footer>
+  </main>
+
+  <dialog id="editDialog">
+    <div class="modal-head"><h3 id="modalTitle">NEW TAPE // 新增收藏</h3><button class="close-x" id="closeModal" aria-label="關閉">×</button></div>
+    <form id="entryForm" class="modal-content">
+      <input type="hidden" id="entryId">
+      <div class="form-grid">
+        <div class="field full"><label for="title">作品名稱 *</label><input id="title" maxlength="100" required placeholder="輸入影集或電影名稱"></div>
+        <div class="field"><label for="category">分類標籤</label><input id="category" placeholder="科幻, 懸疑, 動畫"></div>
+        <div class="field"><label for="status">觀看狀態</label><select id="status"><option value="watching">追劇中</option><option value="done">已完結</option><option value="plan">待觀看</option></select></div>
+        <div class="field"><label for="score">評分（0–10）</label><input id="score" type="number" min="0" max="10" step="0.5" value="8"></div>
+        <div class="field"><label for="coverUrl">封面圖片網址</label><input id="coverUrl" type="url" placeholder="https://..."><span class="hint">留白則使用預設錄影帶封面</span></div>
+        <div class="field full"><label for="review">短評 / WATCHER'S NOTE</label><textarea id="review" maxlength="1200" placeholder="記下這部作品讓你印象深刻的地方..."></textarea></div>
+      </div>
+      <div class="modal-actions"><button type="button" class="btn" id="cancelBtn">取消</button><button type="submit" class="btn primary">儲存資料 ↗</button></div>
+    </form>
+  </dialog>
+
+  <input id="importFile" type="file" accept="application/json,.json" hidden>
+
+  <script>
+    (() => {
+      const STORAGE_KEY = "randomPlayWatchLog_v1";
+      const $ = (id) => document.getElementById(id);
+      const sampleData = [
+        { id: crypto.randomUUID(), title:"葬送的芙莉蓮", category:["奇幻","動畫","冒險"], status:"done", score:9.5, review:"節奏溫柔卻很有重量。透過漫長旅途回望時間、記憶與人際關係，餘韻非常強烈。", cover:"", createdAt:Date.now()-2000 },
+        { id: crypto.randomUUID(), title:"黑鏡", category:["科幻","懸疑","驚悚"], status:"watching", score:9, review:"每一集都像一面不太想照的鏡子，概念大膽，常常看完還會想很久。", cover:"", createdAt:Date.now()-1000 }
+      ];
+      let entries = loadEntries();
+      let activeFilter = "all";
+
+      function loadEntries() {
+        try {
+          const raw = localStorage.getItem(STORAGE_KEY);
+          if (raw === null) {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(sampleData));
+            return sampleData;
+          }
+          const parsed = JSON.parse(raw);
+          return Array.isArray(parsed) ? parsed : sampleData;
+        } catch (error) {
+          console.warn("讀取資料失敗：", error);
+          return sampleData;
+        }
+      }
+      function save() {
+        try {
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(entries));
+          render();
+        } catch (error) {
+          alert("儲存失敗，可能是瀏覽器儲存空間不足。請先匯出備份。");
+        }
+      }
+      function escapeHTML(value) {
+        return String(value ?? "").replace(/[&<>"']/g, char => ({
+          "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
+        }[char]));
+      }
+      function safeImageUrl(value) {
+        try {
+          const url = new URL(value);
+          return ["http:","https:"].includes(url.protocol) ? url.href : "";
+        } catch { return ""; }
+      }
+      function statusText(status) {
+        return ({done:"已完結",watching:"追劇中",plan:"待觀看"})[status] || "未分類";
+      }
+      function isMaster(entry) { return Number(entry.score) >= 9; }
+
+      function render() {
+        const rated = entries.filter(item => Number.isFinite(Number(item.score)));
+        const average = rated.length ? (rated.reduce((sum,item) => sum + Number(item.score),0) / rated.length).toFixed(1) : "--";
+        $("totalCount").textContent = String(entries.length).padStart(2,"0");
+        $("avgScore").textContent = average;
+        $("masterCount").textContent = String(entries.filter(isMaster).length).padStart(2,"0");
+
+        const query = $("searchInput").value.trim().toLowerCase();
+        let visible = entries.filter(item => {
+          const haystack = [item.title, ...(item.category || []), item.review].join(" ").toLowerCase();
+          const matchesQuery = haystack.includes(query);
+          const matchesFilter = activeFilter === "all" ||
+            (activeFilter === "master" ? isMaster(item) : item.status === activeFilter);
+          return matchesQuery && matchesFilter;
+        });
+        $("resultCount").textContent = `${String(visible.length).padStart(2,"0")} TAPES`;
+        const grid = $("tapeGrid");
+        if (!visible.length) {
+          grid.innerHTML = '<div class="empty"><b>NO SIGNAL FOUND</b>沒有符合條件的收藏。試試其他關鍵字，或新增一卷錄影帶！</div>';
+          return;
+        }
+        grid.innerHTML = visible.map(item => {
+          const cover = safeImageUrl(item.cover);
+          const tags = (item.category || []).map(tag => `<span class="tag">#${escapeHTML(tag)}</span>`).join("");
+          return `<article class="tape-card" data-id="${escapeHTML(item.id)}" tabindex="0" aria-label="${escapeHTML(item.title)}，點擊展開詳情">
+            <div class="cover">
+              ${cover ? `<img src="${escapeHTML(cover)}" alt="${escapeHTML(item.title)} 封面" loading="lazy" onerror="this.remove()">` : `<div class="default-cover"><div class="cassette"></div><div class="cover-word">RANDOM PLAY / VOL.01</div></div>`}
+              <div class="card-topline"><span class="pill">${statusText(item.status)}</span><span class="score">${Number(item.score || 0).toFixed(1)}<small>/10</small></span></div>
+            </div>
+            <div class="card-body"><div class="card-kicker">TAPE ID // ${escapeHTML(String(item.id).slice(0,6).toUpperCase())}</div>
+              <h3 class="card-title">${escapeHTML(item.title)}</h3><div class="tags">${tags || '<span class="tag">未分類</span>'}</div>
+              <div class="card-foot"><span>${isMaster(item) ? "★ MASTERPIECE" : "▶ PLAY RECORD"}</span><span>點擊展開　＋</span></div>
+            </div>
+            <div class="expanded"><div class="review">${escapeHTML(item.review || "尚未留下觀看心得。")}</div>
+              <div class="card-actions"><button class="btn small edit-btn" data-action="edit">編輯資料</button><button class="btn small danger delete-btn" data-action="delete">刪除收藏</button></div>
+            </div>
+          </article>`;
+        }).join("");
+      }
+
+      function openForm(item = null) {
+        $("entryForm").reset();
+        $("entryId").value = item?.id || "";
+        $("modalTitle").textContent = item ? "EDIT TAPE // 編輯收藏" : "NEW TAPE // 新增收藏";
+        $("title").value = item?.title || "";
+        $("category").value = (item?.category || []).join(", ");
+        $("status").value = item?.status || "watching";
+        $("score").value = item?.score ?? 8;
+        $("coverUrl").value = item?.cover || "";
+        $("review").value = item?.review || "";
+        $("editDialog").showModal();
+        $("title").focus();
+      }
+      function closeForm() { $("editDialog").close(); }
+
+      $("addBtn").addEventListener("click", () => openForm());
+      $("closeModal").addEventListener("click", closeForm);
+      $("cancelBtn").addEventListener("click", closeForm);
+      $("editDialog").addEventListener("click", event => {
+        if (event.target === $("editDialog")) closeForm();
+      });
+      $("entryForm").addEventListener("submit", event => {
+        event.preventDefault();
+        const id = $("entryId").value;
+        const score = Number($("score").value);
+        if (!Number.isFinite(score) || score < 0 || score > 10) {
+          alert("評分請輸入 0 到 10 之間的數字。"); return;
+        }
+        const old = entries.find(item => item.id === id);
+        const record = {
+          id: id || crypto.randomUUID(),
+          title: $("title").value.trim(),
+          category: $("category").value.split(/[,，、]/).map(x => x.trim()).filter(Boolean).slice(0,8),
+          status: $("status").value,
+          score,
+          cover: safeImageUrl($("coverUrl").value.trim()),
+          review: $("review").value.trim(),
+          createdAt: old?.createdAt || Date.now()
+        };
+        if (!record.title) { alert("請填寫作品名稱。"); return; }
+        if (id) entries = entries.map(item => item.id === id ? record : item);
+        else entries.unshift(record);
+        save(); closeForm();
+      });
+
+      $("tapeGrid").addEventListener("click", event => {
+        const card = event.target.closest(".tape-card");
+        if (!card) return;
+        const id = card.dataset.id;
+        const action = event.target.closest("[data-action]")?.dataset.action;
+        if (action === "edit") {
+          event.stopPropagation();
+          const item = entries.find(entry => entry.id === id);
+          if (item) openForm(item);
+        } else if (action === "delete") {
+          event.stopPropagation();
+          const item = entries.find(entry => entry.id === id);
+          if (item && confirm(`確定刪除「${item.title}」？此動作無法復原。`)) {
+            entries = entries.filter(entry => entry.id !== id); save();
+          }
+        } else {
+          card.classList.toggle("open");
+        }
+      });
+      $("tapeGrid").addEventListener("keydown", event => {
+        if ((event.key === "Enter" || event.key === " ") && event.target.classList.contains("tape-card")) {
+          event.preventDefault(); event.target.classList.toggle("open");
+        }
+      });
+      $("searchInput").addEventListener("input", render);
+      $("filters").addEventListener("click", event => {
+        const button = event.target.closest("[data-filter]");
+        if (!button) return;
+        activeFilter = button.dataset.filter;
+        document.querySelectorAll("#filters .btn").forEach(btn => btn.classList.toggle("active", btn === button));
+        render();
+      });
+
+      function exportJSON() {
+        const blob = new Blob([JSON.stringify({ app:"RANDOM PLAY WATCH LOG", version:1, exportedAt:new Date().toISOString(), entries },null,2)], {type:"application/json"});
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement("a");
+        link.href = url; link.download = `random-play-backup-${new Date().toISOString().slice(0,10)}.json`;
+        link.click(); URL.revokeObjectURL(url);
+      }
+      function importJSON(file) {
+        const reader = new FileReader();
+        reader.onload = () => {
+          try {
+            const parsed = JSON.parse(reader.result);
+            const imported = Array.isArray(parsed) ? parsed : parsed.entries;
+            if (!Array.isArray(imported)) throw new Error("格式不正確");
+            const cleaned = imported.map(item => {
+              if (!item || typeof item.title !== "string" || !item.title.trim()) throw new Error("備份中有缺少作品名稱的資料");
+              return {
+                id: String(item.id || crypto.randomUUID()),
+                title: item.title.trim().slice(0,100),
+                category: Array.isArray(item.category) ? item.category.map(String).slice(0,8) : [],
+                status: ["done","watching","plan"].includes(item.status) ? item.status : "plan",
+                score: Math.min(10,Math.max(0,Number(item.score) || 0)),
+                review: String(item.review || "").slice(0,1200),
+                cover: safeImageUrl(item.cover || ""),
+                createdAt: Number(item.createdAt) || Date.now()
+              };
+            });
+            if (!confirm(`即將匯入 ${cleaned.length} 筆資料，並取代目前全部收藏。確定繼續？`)) return;
+            entries = cleaned; save(); alert("匯入完成！資料已儲存。");
+          } catch (error) { alert("匯入失敗：" + error.message); }
+          $("importFile").value = "";
+        };
+        reader.readAsText(file);
+      }
+
+      // 備份功能放在頂部選單，避免佔用錄影帶牆版面。
+      const backupMenu = document.createElement("div");
+      backupMenu.className = "filters";
+      backupMenu.innerHTML = '<button class="btn" id="exportBtn">↓ 匯出 JSON 備份</button><button class="btn" id="importBtn">↑ 匯入還原</button>';
+      $("addBtn").before(backupMenu);
+      $("exportBtn").addEventListener("click", exportJSON);
+      $("importBtn").addEventListener("click", () => $("importFile").click());
+      $("importFile").addEventListener("change", event => {
+        const file = event.target.files?.[0];
+        if (file) importJSON(file);
+      });
+
+      render();
+    })();
+  </script>
+</body>
+</html>
